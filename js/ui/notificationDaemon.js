@@ -441,7 +441,6 @@ const FdoNotificationDaemon = new Lang.Class({
                 notification.setUrgency(MessageTray.Urgency.CRITICAL);
                 break;
         }
-        notification.setResident(hints.resident == true);
         // 'transient' is a reserved keyword in JS, so we have to retrieve the value
         // of the 'transient' hint with hints['transient'] rather than hints.transient
         notification.setTransient(hints['transient'] == true);
@@ -469,7 +468,6 @@ const FdoNotificationDaemon = new Lang.Class({
             'body-markup',
             // 'icon-multi',
             'icon-static',
-            'persistence',
             'sound',
         ];
     },
@@ -583,7 +581,7 @@ const FdoNotificationDaemonSource = new Lang.Class({
             this.iconUpdated();
 
         let tracker = Shell.WindowTracker.get_default();
-        if (notification.resident && this.app && tracker.focus_app == this.app)
+        if (this.app && tracker.focus_app == this.app)
             this.pushNotification(notification);
         else
             this.notify(notification);
