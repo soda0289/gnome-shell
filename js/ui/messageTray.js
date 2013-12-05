@@ -426,6 +426,81 @@ const NotificationApplicationPolicy = new Lang.Class({
     }
 });
 
+const RevealerLayout = new Lang.Class({
+    Name: 'RevealerLayout',
+    Extends: Clutter.LayoutManager,
+
+    _init: function() {
+        this.parent();
+
+        this._heightScale = 0;
+    },
+
+    vfunc_get_preferred_height: function(container, forWidth) {
+        let child = container.get_first_child();
+        let [minHeight, natHeight] = child.get_preferred_height(forWidth);
+        minHeight *= this._heightScale;
+        natHeight *= this._heightScale;
+        return [minHeight, natHeight];
+    },
+
+    vfunc_get_preferred_width: function(container, forHeight) {
+        let child = container.get_first_child();
+        return child.get_preferred_width(forHeight);
+    },
+
+    vfunc_allocate: function(container, box, flags) {
+        let child = container.get_first_child();
+        let [minHeight, natHeight] = child.get_preferred_height(box.x2 - box.x1);
+        // Align to the top
+        box.y2 = box.y1 + natHeight * this._heightScale;
+        child.allocate(box, flags);
+    },
+
+    set heightScale(value) {
+        if (this._heightScale == value)
+            return;
+
+        this._heightScale = value;
+        this.layout_changed();
+    },
+
+    get heightScale() {
+        return this._heightScale;
+    },
+});
+
+const Revealer = new Lang.Class({
+    Name: 'Revealer',
+
+    _init: function(child) {
+        this._layout = new RevealerLayout();
+        this.actor = new St.Widget({ layout_manager: this._layout });
+        this.actor.add_child(child);
+
+        this._visible = false;
+    },
+
+    _tweenTo: function(heightScale) {
+        Tweener.removeTweens(this._layout);
+        Tweener.addTween(this._layout, { heightScale: heightScale,
+                                         time: ANIMATION_TIME,
+                                         transition: 'easeOutQuad' });
+    },
+
+    set visible(value) {
+        if (this._visible == value)
+            return;
+
+        this._visible = value;
+        this._tweenTo(this._visible ? 1 : 0);
+    },
+
+    get visible() {
+        return this._visible;
+    },
+});
+
 // Notification:
 // @source: the notification's Source
 // @title: the title
@@ -1558,6 +1633,8 @@ const MessageTray = new Lang.Class({
                                                    y_expand: true,
                                                    x_expand: true,
                                                    layout_manager: new Clutter.BinLayout() });
+        this._notificationRevealer = new Revealer(this._notificationWidget);
+
         this._notificationWidget.connect('key-release-event', Lang.bind(this, this._onNotificationKeyRelease));
         this._notificationWidget.connect('notify::hover', Lang.bind(this, this._onNotificationHoverChanged));
         this._notificationWidget.connect('notify::height', Lang.bind(this, function() {
@@ -1661,7 +1738,7 @@ const MessageTray = new Lang.Class({
                                                         }));
 
         Main.layoutManager.trayBox.add_actor(this.actor);
-        Main.layoutManager.trayBox.add_actor(this._notificationWidget);
+        Main.layoutManager.trayBox.add_actor(this._notificationRevealer.actor);
         Main.layoutManager.trackChrome(this.actor);
         Main.layoutManager.trackChrome(this._notificationWidget);
         Main.layoutManager.trackChrome(this._closeButton);
@@ -2445,6 +2522,7 @@ const MessageTray = new Lang.Class({
                       onComplete: this._showNotificationCompleted,
                       onCompleteScope: this
                     });
+        this._notificationRevealer.visible = true;
    },
 
     _showNotificationCompleted: function() {
@@ -2519,6 +2597,7 @@ const MessageTray = new Lang.Class({
                           onComplete: this._hideNotificationCompleted,
                           onCompleteScope: this
                         });
+            this._notificationRevealer.visible = false;
         } else {
             Tweener.removeTweens(this._notificationWidget);
             this._notificationWidget.opacity = 0;
