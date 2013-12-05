@@ -724,8 +724,6 @@ const ChatNotification = new Lang.Class({
 
         this._lastGroupActor.add(body, props.childProps);
 
-        this.updated();
-
         let timestamp = props.timestamp;
         this._history.unshift({ actor: body, time: timestamp,
                                 realMessage: group != 'meta' });
