@@ -722,7 +722,9 @@ const ChatNotification = new Lang.Class({
             this._bodyBox.add_child(this._lastGroupActor);
         }
 
-        this._lastGroupActor.add(body, props.childProps);
+        let revealer = new MessageTray.Revealer(body);
+        this._lastGroupActor.add(revealer, props.childProps);
+        revealer.visible = true;
 
         let timestamp = props.timestamp;
         this._history.unshift({ actor: body, time: timestamp,
