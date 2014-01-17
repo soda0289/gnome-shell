@@ -13,6 +13,8 @@ const ShellEntry = imports.ui.shellEntry;
 const Tweener = imports.ui.tweener;
 const UserWidget = imports.ui.userWidget;
 
+const GraphAuth = imports.gdm.graphAuth;
+
 const DEFAULT_BUTTON_WELL_ICON_SIZE = 24;
 const DEFAULT_BUTTON_WELL_ANIMATION_DELAY = 1.0;
 const DEFAULT_BUTTON_WELL_ANIMATION_TIME = 0.3;
@@ -97,6 +99,17 @@ const AuthPrompt = new Lang.Class({
                          x_fill: false,
                          y_fill: true,
                          x_align: St.Align.START });
+       
+        this._graphAuth = new GraphAuth.GraphAuth();
+        this._graphAuth.connect('next', Lang.bind(this, function(){
+                                                        this._entry.text = this._graphAuth.key.toString();
+                                                        this.emit('next');
+                                                       }));
+
+        this.actor.add(this._graphAuth.actor,{
+                       expand: false,
+                       x_align: St.Align.MIDDLE });
+
         this._entry = new St.Entry({ style_class: 'login-dialog-prompt-entry',
                                      can_focus: true });
         ShellEntry.addContextMenu(this._entry, { isPassword: true });

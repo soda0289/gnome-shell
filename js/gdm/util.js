@@ -18,6 +18,7 @@ const SmartcardManager = imports.misc.smartcardManager;
 const Tweener = imports.ui.tweener;
 
 const PASSWORD_SERVICE_NAME = 'gdm-password';
+const GRAPH_AUTH_SERVICE_NAME = 'gdm-graph';
 const FINGERPRINT_SERVICE_NAME = 'gdm-fingerprint';
 const SMARTCARD_SERVICE_NAME = 'gdm-smartcard';
 const OVIRT_SERVICE_NAME = 'gdm-ovirtcred';
@@ -388,7 +389,7 @@ const ShellUserVerifier = new Lang.Class({
 
     _updateDefaultService: function() {
         if (this._settings.get_boolean(PASSWORD_AUTHENTICATION_KEY))
-            this._defaultService = PASSWORD_SERVICE_NAME;
+            this._defaultService = GRAPH_AUTH_SERVICE_NAME;
         else if (this.smartcardDetected)
             this._defaultService = SMARTCARD_SERVICE_NAME;
         else if (this._haveFingerprintReader)

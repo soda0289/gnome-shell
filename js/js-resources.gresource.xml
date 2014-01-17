@@ -8,6 +8,7 @@
     <file>gdm/oVirt.js</file>
     <file>gdm/realmd.js</file>
     <file>gdm/util.js</file>
+    <file>gdm/graphAuth.js</file>
 
     <file>extensionPrefs/main.js</file>
 
